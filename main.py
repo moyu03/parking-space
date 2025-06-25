@@ -1,17 +1,24 @@
+# main.py
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QApplication
+from src.core.parking_lot import ParkingLot
+from src.core.side_road import SideRoad
+from src.ui.main_window import MainWindow
 
-if __name__ == '__main__':
-    # 创建Qt应用程序实例
+def main():
+    # 初始化核心系统
+    parking_system = ParkingLot()
+    side_road = SideRoad()
+    
+    # 创建应用
     app = QApplication(sys.argv)
-
-    # 创建一个QWidget对象，作为主窗口
-    w = QWidget()
-    w.resize(1080, 720)
-    w.move(300, 300)
-    w.setWindowTitle('Simple')
-    w.show()
-
-    # 运行Qt应用程序
+    
+    # 创建主窗口
+    window = MainWindow(parking_system, side_road)
+    window.show()
+    
+    # 启动应用
     sys.exit(app.exec_())
 
+if __name__ == "__main__":
+    main()
