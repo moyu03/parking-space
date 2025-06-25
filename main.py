@@ -1,22 +1,17 @@
 import sys
-import time
-from PyQt5.QtWidgets import QApplication
- #from core.parking_lot import ParkingSystem
-from ui.main_window import MainWindow
+from PyQt5.QtWidgets import QApplication, QWidget
 
-def main():
-    # 创建应用实例
+if __name__ == '__main__':
+    # 创建Qt应用程序实例
     app = QApplication(sys.argv)
-    
-    # 初始化核心系统
-    #parking_system = ParkingSystem(capacity=10)
-    
-    # 创建主窗口
-    window = MainWindow(parking_system)
-    window.show()
-    
-    # 执行应用
+
+    # 创建一个QWidget对象，作为主窗口
+    w = QWidget()
+    w.resize(1080, 720)
+    w.move(300, 300)
+    w.setWindowTitle('Simple')
+    w.show()
+
+    # 运行Qt应用程序
     sys.exit(app.exec_())
 
-if __name__ == "__main__":
-    main()
