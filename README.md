@@ -1,5 +1,9 @@
-# parking-space
-停车场算法
+# parking-space停车场管理
+
+## 安装依赖
+```
+pip install -r requirements.txt
+```
 文件结构
 ```
 parking-management/
