@@ -3,6 +3,7 @@ from tkinter import scrolledtext
 from core.parking import Car, ParkingLot, WaitingLane
 from core.billing import Billing
 from utils.time_utils import timestamp_to_str
+from utils.window_utils import center_window
 
 class ParkingUI:
     """停车管理界面"""
@@ -71,6 +72,7 @@ class ParkingUI:
         
         self.refresh_status()
         self.log("停车管理系统已启动", "info")
+        center_window(self.master, 900, 500)
 
     def log(self, message, level="info"):
         """在日志区域添加消息"""

@@ -5,6 +5,7 @@ from tkinter import messagebox
 from .main_menu import MainMenu
 from models.user import User
 from core.config import Config
+from utils.window_utils import center_window
 
 class LoginUI:
     def __init__(self, master):
@@ -21,6 +22,7 @@ class LoginUI:
         tk.OptionMenu(master, self.role_var, "user", "admin").pack()
 
         tk.Button(master, text="登录", command=self.login).pack(pady=10)
+        center_window(self.master, 300, 200)
 
     def login(self):
         username = self.username_entry.get().strip()

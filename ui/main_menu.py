@@ -3,6 +3,7 @@
 import tkinter as tk
 from .parking_ui import ParkingUI
 from .setting import SettingsUI
+from utils.window_utils import center_window
 
 class MainMenu:
     def __init__(self, master, user, config):
@@ -17,6 +18,7 @@ class MainMenu:
         tk.Button(master, text="进入停车系统", width=25, command=self.enter_parking).pack(pady=5)
         tk.Button(master, text="设置", width=25, command=self.open_settings).pack(pady=5)
         tk.Button(master, text="退出应用", width=25, command=master.quit).pack(pady=5)
+        center_window(self.master, 300, 200)
 
     def enter_parking(self):
         self.master.destroy()
