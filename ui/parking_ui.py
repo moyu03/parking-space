@@ -65,6 +65,9 @@ class ParkingUI:
         self.log_text.tag_config("success", foreground="green")
         self.log_text.tag_config("warning", foreground="orange")
         self.log_text.tag_config("info", foreground="blue")
+        self.log_text.tag_config("movement", foreground="#8A2BE2")  # 紫罗兰色
+        self.log_text.tag_config("movement-bold", foreground="#8A2BE2", font=("Arial", 10, "bold"))
+        
         
         self.refresh_status()
         self.log("停车管理系统已启动", "info")
@@ -119,12 +122,14 @@ class ParkingUI:
             self.log(f"失败：未找到车牌号为 {car_id} 的车辆", "error")
             return
         
-        # 记录让路车辆信息
+       # 记录让路车辆信息
         if moved_cars:
             moved_ids = [car.car_id for car in moved_cars]
-            self.log(f"提示：车辆 {car_id} 离开，让路车辆: {', '.join(moved_ids)}", "info")
+            # 使用movement-bold标签使让路信息更突出
+            self.log(f"提示：车辆 {car_id} 离开，让路车辆: {', '.join(moved_ids)}", "movement-bold")
         else:
             self.log(f"提示：车辆 {car_id} 离开，无让路车辆", "info")
+        
         
         # 计算费用
         duration = car.get_duration()
