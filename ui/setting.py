@@ -36,6 +36,25 @@ class SettingsUI:
         tk.Button(master, text="保存设置", command=self.save).pack(pady=10)
         tk.Button(master, text="返回主菜单", command=self.return_main).pack()
 
+        
+        # 添加计费模式说明
+        billing_frame = tk.LabelFrame(master, text="当前计费模式说明")
+        billing_frame.pack(fill="x", padx=10, pady=5)
+        
+        billing_text = tk.Text(billing_frame, height=4, wrap="word")
+        billing_text.pack(fill="x", padx=5, pady=5)
+        
+        # 根据配置显示计费模式说明
+        if config.billing_mode == "per_minute":
+            msg = f"当前计费模式: 按分钟计费\n费率: ¥{config.fee_per_minute}/分钟\n示例: 停车30分钟费用 = 30 × {config.fee_per_minute} = ¥{30 * config.fee_per_minute:.2f}"
+        elif config.billing_mode == "per_hour":
+            msg = f"当前计费模式: 按小时计费\n费率: ¥{config.fee_per_hour}/小时\n示例: 停车1.5小时费用 = 1.5 × {config.fee_per_hour} = ¥{1.5 * config.fee_per_hour:.2f}"
+        else:
+            msg = f"当前计费模式: 固定费率\n费用: ¥{config.fixed_fee}\n无论停车时长多久，费用固定"
+        
+        billing_text.insert("1.0", msg)
+        billing_text.config(state="disabled")  # 设置为只读
+
     def save(self):
         try:
             pc = int(self.parking_entry.get())

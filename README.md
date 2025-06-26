@@ -29,7 +29,7 @@ conda config --set show_channel_urls yes
 pip config get global.index-url
 
 #python打包
-python -m PyInstaller parking.spec
+pyinstaller --onefile --noconsole main.py
 ```
 项目文档结构
 ```
@@ -41,6 +41,13 @@ parking_space/
 │   ├── billing.py           # 计费逻辑封装
 │   └── config.py            # 全局配置（默认容量、费率等）
 │
+├── extensions/
+└── dual_exit/
+│   ├── parking.py          # 双向停车场核心类
+│   ├── lane.py             # 双便道管理类
+│   ├── optimizer.py        # 出口优化算法
+│   ├── adapter.py          # 适配器（连接新旧系统）
+│   └── ui_extension.py     # UI扩展组件
 ├── ui/
 │   ├── login.py             # 登录界面
 │   ├── main_menu.py         # 主菜单界面
