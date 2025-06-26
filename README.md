@@ -27,6 +27,9 @@ conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/
 conda config --set show_channel_urls yes
 
 pip config get global.index-url
+
+#python打包
+python -m PyInstaller parking.spec
 ```
 项目文档结构
 ```

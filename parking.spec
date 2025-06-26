@@ -13,7 +13,8 @@ a = Analysis(
         ('core/', 'core'),
         ('models/', 'models'),
         ('utils/', 'utils'),
-        ('icon.ico', '.')  # 添加图标
+        ('icon.ico', '.'), # 添加图标
+        ('D:\\anaconda\\python312.dll', '.')
     ],
     hiddenimports=[
         # 手动添加所有隐藏依赖
@@ -22,6 +23,7 @@ a = Analysis(
         'datetime',
         'collections',
         'sys',
+        
         'os',
         'utils.time_utils'
     ],

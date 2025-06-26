@@ -3,13 +3,14 @@ from collections import deque
 
 class Car:
     """汽车实体类"""
-    def __init__(self, car_id):
+    def __init__(self, car_id, enter_time=None):
         self.car_id = car_id
-        self.enter_time = time.time()
-
-    def get_duration(self):
-        """计算停留时间"""
-        return time.time() - self.enter_time
+        # 如果提供了进入时间则使用，否则使用当前时间
+        self.enter_time = enter_time if enter_time is not None else time.time()
+    
+    def update_enter_time(self, new_time):
+        """更新进入时间"""
+        self.enter_time = new_time
 
 class ParkingLot:
     """停车场类，使用栈结构实现"""
@@ -66,6 +67,7 @@ class ParkingLot:
 
 class WaitingLane:
     """便道类，使用队列结构实现"""
+    # 关键修复：添加构造函数接受容量参数
     def __init__(self, capacity):
         self.capacity = capacity
         self.queue = deque()
@@ -86,7 +88,7 @@ class WaitingLane:
         if not self.queue:
             return None
         return self.queue.popleft()
-
+  
     def current_state(self):
-        """获取当前便道状态"""
+        """获取当前便道状态 - 返回原始进入时间"""
         return [(car.car_id, car.enter_time) for car in self.queue]
