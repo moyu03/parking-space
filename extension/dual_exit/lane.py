@@ -4,6 +4,19 @@ class DualWaitingLane:
         self.south_queue = []  # 南便道队列
         self.capacity = capacity
     
+    
+    def is_car_exists(self, car_id):
+        """检查便道中是否存在指定车牌号的车辆"""
+        for item in self.north_queue:
+            if item["car"].car_id == car_id:
+                return True
+        
+        for item in self.south_queue:
+            if item["car"].car_id == car_id:
+                return True
+        
+        return False
+    
     def enqueue(self, car, arrival_time):
         """车辆进入便道，选择最短队列"""
         if len(self.north_queue) + len(self.south_queue) >= self.capacity:

@@ -83,15 +83,17 @@ class ParkingUI:
         if user.role == "admin":
             tk.Button(input_frame, text="导出数据", command=self.export_data).grid(row=0, column=7, padx=5)
         
-       
-        # 状态区域
-        status_frame = tk.Frame(main_frame)
-        status_frame.pack(fill=tk.BOTH, expand=True)
+        # 状态区域 - 使用PanedWindow实现可调整的分割
+        self.status_paned = tk.PanedWindow(main_frame, orient=tk.HORIZONTAL, sashrelief=tk.RAISED, sashwidth=5)
+        self.status_paned.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
         
-        # 首先确保日志控件总是被创建
-        # 日志输出 - 现在总是初始化
-        status_right = tk.LabelFrame(status_frame, text="操作日志", font=("Arial", 10, "bold"))
-        status_right.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=(5, 0))
+        # 左侧状态区域容器
+        self.status_left_container = tk.Frame(self.status_paned)
+        self.status_paned.add(self.status_left_container, stretch="always")
+        
+        # 右侧日志区域 - 减小宽度比例
+        status_right = tk.LabelFrame(self.status_paned, text="操作日志", font=("Arial", 10, "bold"))
+        self.status_paned.add(status_right, stretch="never", width=300)  # 固定宽度为300px
         
         self.log_text = scrolledtext.ScrolledText(status_right, height=15)
         self.log_text.pack(fill=tk.BOTH, expand=True)
@@ -110,10 +112,6 @@ class ParkingUI:
         self.dual_system = None
         self.dual_ui = None
         
-        # 左侧状态区域容器 - 现在作为独立变量
-        self.status_left_container = tk.Frame(status_frame)
-        self.status_left_container.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 5))
-        
         if config.enable_dual_exit and DUAL_EXIT_SUPPORTED:
             try:
                 # 创建双向系统
@@ -121,6 +119,7 @@ class ParkingUI:
                     config, 
                     self.parking_lot, 
                     self.waiting_lane,
+                    self.billing,
                     log_callback=self.log
                 )
                 # 创建双向系统UI
@@ -174,6 +173,7 @@ class ParkingUI:
         self.log_text.see(tk.END)  # 滚动到底部
         self.log_text.config(state=tk.DISABLED)
 
+ 
     def car_arrive(self):
         """处理车辆进入"""
         car_id = self.car_id_entry.get().strip()
@@ -191,6 +191,8 @@ class ParkingUI:
                     self.log(f"成功：车辆 {car_id} 停入{position}\n", "success")
                 elif status == "IN_SIDE_ROAD":
                     self.log(f"提示：停车场已满，车辆 {car_id} 在{position}等待\n", "info")
+                elif status == "EXISTS":
+                    self.log(f"错误：车牌号 {car_id} 已存在\n", "error")
                 else:
                     self.log(f"失败：{position}\n", "warning")
             else:
@@ -210,10 +212,9 @@ class ParkingUI:
                     self.log(f"失败：停车场和便道均满，车辆 {car_id} 无法进入\n", "warning")
             
         except Exception as e:
-            # 添加详细的错误日志
             self.log(f"车辆进入操作出错: {str(e)}\n", "error")
             import traceback
-            traceback.print_exc()  # 在控制台打印完整堆栈
+            traceback.print_exc()
             
         finally:
             self.car_id_entry.delete(0, tk.END)
@@ -430,7 +431,6 @@ class ParkingUI:
             self.log(f"导出失败: {str(e)}", "error")
             return False
     
-
     def car_depart(self):
         """处理车辆离开"""
         car_id = self.car_id_entry.get().strip()
@@ -510,6 +510,11 @@ class ParkingUI:
                     self.log("提示：便道中无等待车辆\n", "info")
             
             self.refresh_status()
+        
+        except Exception as e:
+            self.log(f"车辆离开操作出错: {str(e)}\n", "error")
+            import traceback
+            traceback.print_exc()
         
         except Exception as e:
             self.log(f"车辆离开操作出错: {str(e)}\n", "error")

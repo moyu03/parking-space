@@ -58,22 +58,31 @@ class ExitOptimizer:
         
         if imbalance > 0.3:  # 当不平衡度超过30%时触发优化
             moves = 0
+            # 限制最大移动数量为3辆
+            max_moves = min(3, abs(north_count - south_count) // 2)
+            
             if north_count > south_count:
-                # 将北端车辆移动到南端
-                moves = min(3, north_count - south_count)
-                for _ in range(moves):
+                # 将北端车辆移动到南端（从栈顶开始移动）
+                for _ in range(max_moves):
                     if self.parking_lot.north_stack:
                         car_data = self.parking_lot.north_stack.pop()
+                        # 更新车辆位置信息
+                        new_position = len(self.parking_lot.south_stack) + 1
+                        car_data["position"] = f"S{new_position}"
                         self.parking_lot.south_stack.append(car_data)
                         self.record_move(car_data["car"].car_id, "north", "south")
+                        moves += 1
             else:
-                # 将南端车辆移动到北端
-                moves = min(3, south_count - north_count)
-                for _ in range(moves):
+                # 将南端车辆移动到北端（从栈顶开始移动）
+                for _ in range(max_moves):
                     if self.parking_lot.south_stack:
                         car_data = self.parking_lot.south_stack.pop()
+                        # 更新车辆位置信息
+                        new_position = len(self.parking_lot.north_stack) + 1
+                        car_data["position"] = f"N{new_position}"
                         self.parking_lot.north_stack.append(car_data)
                         self.record_move(car_data["car"].car_id, "south", "north")
+                        moves += 1
             return True, f"系统优化完成，移动了 {moves} 辆车"
         return False, "系统平衡，无需优化"
     

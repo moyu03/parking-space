@@ -7,6 +7,19 @@ class DualExitParkingLot:
         self.south_stack = []  # 南端停车场（栈结构）
         self.total_spots = capacity
         self.occupied = 0
+
+    
+    def is_car_exists(self, car_id):
+        """检查停车场中是否存在指定车牌号的车辆"""
+        for spot in self.north_stack:
+            if spot["car"].car_id == car_id:
+                return True
+        
+        for spot in self.south_stack:
+            if spot["car"].car_id == car_id:
+                return True
+        
+        return False
     
     def enter(self, car, entry_time):
         """车辆进入，自动选择最优入口"""
@@ -50,18 +63,19 @@ class DualExitParkingLot:
         if not spot:
             return False, "车辆不存在"
         
-        # 计算最优出口
+        # 计算让路成本（上方车辆数量）
+        move_cost = 0
         if side == "north":
             # 北端车辆从北出口离开
-            # 计算让路成本（北端上方车辆数）
-            move_cost = index
+            move_cost = len(self.north_stack) - index - 1
+            # 移除车辆
             self.north_stack.pop(index)
             # 下方车辆上移
             for i in range(index, len(self.north_stack)):
                 self.north_stack[i]["position"] = f"N{i+1}"
         else:
             # 南端车辆从南出口离开
-            move_cost = index
+            move_cost = len(self.south_stack) - index - 1
             self.south_stack.pop(index)
             for i in range(index, len(self.south_stack)):
                 self.south_stack[i]["position"] = f"S{i+1}"

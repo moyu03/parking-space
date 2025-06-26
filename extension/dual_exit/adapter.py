@@ -5,14 +5,14 @@ from core.parking import ParkingLot, WaitingLane
 import time
 
 class DualSystemAdapter:
-    def __init__(self, config, old_parking=None, old_waiting=None, log_callback=None):
+    def __init__(self, config, old_parking=None, old_waiting=None, billing=None, log_callback=None):
         self.config = config
-        self.log = log_callback or (lambda msg, level: print(f"[{level}] {msg}"))  # 默认日志处理
+        self.billing = billing
+        self.log = log_callback or (lambda msg, level: print(f"[{level}] {msg}"))
         self.parking_lot = DualExitParkingLot(config.parking_capacity)
         self.waiting_lane = DualWaitingLane(config.waiting_capacity * 2)
         self.optimizer = ExitOptimizer(self.parking_lot, self.waiting_lane)
         
-        # 迁移旧系统数据 - 添加异常处理
         if old_parking and old_waiting:
             try:
                 self.migrate_from_old_system(old_parking, old_waiting)
@@ -33,12 +33,24 @@ class DualSystemAdapter:
             if not success:
                 self.log(f"警告: 无法迁移车辆 {car.car_id} 到双门系统便道", "warning")
     
-    # ... [其他方法保持不变] ...
+   
+    def is_car_exists(self, car_id):
+        """检查车牌号是否已存在"""
+        # 检查停车场
+        if self.parking_lot.find_car(car_id)[2]:
+            return True
+        
+        # 检查便道
+        return self.waiting_lane.is_car_exists(car_id)
     
     def enter(self, car):
         """车辆进入系统"""
         current_time = time.time()
         try:
+            # 检查车牌号是否已存在
+            if self.is_car_exists(car.car_id):
+                return "EXISTS", "车牌号已存在", current_time
+            
             # 尝试进入停车场
             success, position = self.parking_lot.enter(car, current_time)
             if success:
