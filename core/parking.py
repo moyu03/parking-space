@@ -31,6 +31,7 @@ class ParkingLot:
     def depart(self, car_id):
         """车辆离开停车场，实现让路机制"""
         temp_stack = []  # 存储让路车辆的临时栈
+        moved_cars = []  # 记录所有被移动的车辆
         found = False
         target = None
         
@@ -42,8 +43,9 @@ class ParkingLot:
                 target = current
                 break
             else:
-                # 将让路车辆存入临时栈
+                # 将让路车辆存入临时栈并记录
                 temp_stack.append(current)
+                moved_cars.append(current)  # 记录所有让路车辆
         
         # 未找到车辆
         if not found:
@@ -56,7 +58,7 @@ class ParkingLot:
         while temp_stack:
             self.stack.append(temp_stack.pop())
         
-        return target, temp_stack  # 返回目标车辆和让路车辆列表
+        return target, moved_cars  # 返回目标车辆和让路车辆列表
 
     def current_state(self):
         """获取当前停车场状态"""

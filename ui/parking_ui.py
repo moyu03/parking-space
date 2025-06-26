@@ -21,34 +21,37 @@ class ParkingUI:
         input_frame = tk.Frame(main_frame)
         input_frame.pack(fill=tk.X, pady=(0, 10))
         
-        tk.Label(input_frame, text="车牌号:").pack(side=tk.LEFT)
+        tk.Label(input_frame, text="车牌号:").grid(row=0, column=0, padx=5)
         self.car_id_entry = tk.Entry(input_frame, width=20)
-        self.car_id_entry.pack(side=tk.LEFT, padx=5)
+        self.car_id_entry.grid(row=0, column=1, padx=5)
         self.car_id_entry.focus()
         self.car_id_entry.bind("<Return>", lambda event: self.car_arrive())
         
-        tk.Button(input_frame, text="车辆进入", command=self.car_arrive).pack(side=tk.LEFT, padx=5)
-        tk.Button(input_frame, text="车辆离开", command=self.car_depart).pack(side=tk.LEFT)
-        tk.Button(input_frame, text="返回主菜单", command=self.return_main).pack(side=tk.RIGHT)
+        tk.Button(input_frame, text="车辆进入", command=self.car_arrive).grid(row=0, column=2, padx=5)
+        tk.Button(input_frame, text="车辆离开", command=self.car_depart).grid(row=0, column=3, padx=5)
+        tk.Button(input_frame, text="返回主菜单", command=self.return_main).grid(row=0, column=4, padx=5)
         
         # 状态区域
         status_frame = tk.Frame(main_frame)
         status_frame.pack(fill=tk.BOTH, expand=True)
         
         # 停车场状态
-        status_left = tk.Frame(status_frame)
+        status_left = tk.LabelFrame(status_frame, text="停车场状态", font=("Arial", 10, "bold"))
         status_left.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 5))
         
-        tk.Label(status_left, text="停车场状态", font=("Arial", 10, "bold")).pack(anchor="w")
-        self.status_text = tk.Text(status_left, height=12)
+        # 添加滚动条
+        status_scroll = tk.Scrollbar(status_left)
+        status_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        self.status_text = tk.Text(status_left, height=15, yscrollcommand=status_scroll.set)
         self.status_text.pack(fill=tk.BOTH, expand=True)
+        status_scroll.config(command=self.status_text.yview)
         
         # 日志输出
-        status_right = tk.Frame(status_frame)
+        status_right = tk.LabelFrame(status_frame, text="操作日志", font=("Arial", 10, "bold"))
         status_right.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=(5, 0))
         
-        tk.Label(status_right, text="操作日志", font=("Arial", 10, "bold")).pack(anchor="w")
-        self.log_text = scrolledtext.ScrolledText(status_right, height=12)
+        self.log_text = scrolledtext.ScrolledText(status_right, height=15)
         self.log_text.pack(fill=tk.BOTH, expand=True)
         self.log_text.config(state=tk.DISABLED)  # 设置为只读
         
@@ -57,27 +60,19 @@ class ParkingUI:
         self.waiting_lane = WaitingLane(config.waiting_capacity)
         self.billing = Billing(config)
         
+        # 配置日志颜色标签
+        self.log_text.tag_config("error", foreground="red")
+        self.log_text.tag_config("success", foreground="green")
+        self.log_text.tag_config("warning", foreground="orange")
+        self.log_text.tag_config("info", foreground="blue")
+        
         self.refresh_status()
         self.log("停车管理系统已启动", "info")
 
     def log(self, message, level="info"):
         """在日志区域添加消息"""
         self.log_text.config(state=tk.NORMAL)
-        
-        # 根据消息级别设置不同颜色
-        if level == "error":
-            tag = "red"
-            self.log_text.tag_config("red", foreground="red")
-        elif level == "success":
-            tag = "green"
-            self.log_text.tag_config("green", foreground="green")
-        elif level == "warning":
-            tag = "orange"
-            self.log_text.tag_config("orange", foreground="orange")
-        else:
-            tag = "black"
-        
-        self.log_text.insert(tk.END, message + "\n", tag)
+        self.log_text.insert(tk.END, message + "\n", level)
         self.log_text.see(tk.END)  # 滚动到底部
         self.log_text.config(state=tk.DISABLED)
 
@@ -126,8 +121,10 @@ class ParkingUI:
         
         # 记录让路车辆信息
         if moved_cars:
-            moved_ids = [moved_car.car_id for moved_car in moved_cars]
+            moved_ids = [car.car_id for car in moved_cars]
             self.log(f"提示：车辆 {car_id} 离开，让路车辆: {', '.join(moved_ids)}", "info")
+        else:
+            self.log(f"提示：车辆 {car_id} 离开，无让路车辆", "info")
         
         # 计算费用
         duration = car.get_duration()
@@ -180,12 +177,16 @@ class ParkingUI:
 
     def is_car_exists(self, car_id):
         """检查车牌号是否已存在"""
+        # 检查停车场
         for car_info in self.parking_lot.current_state():
             if car_info[0] == car_id:
                 return True
+        
+        # 检查便道
         for car_info in self.waiting_lane.current_state():
             if car_info[0] == car_id:
                 return True
+        
         return False
 
     def is_car_in_waiting_lane(self, car_id):
