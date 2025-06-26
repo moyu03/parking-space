@@ -65,6 +65,7 @@ class ParkingUI:
         # 配置日志颜色标签
         self.log_text.tag_config("error", foreground="red")
         self.log_text.tag_config("success", foreground="green")
+        self.log_text.tag_config("fee", foreground="#aa16aa",font=("Arial", 10, "bold"))
         self.log_text.tag_config("warning", foreground="orange")
         self.log_text.tag_config("info", foreground="blue")
         self.log_text.tag_config("movement", foreground="#8A2BE2")  # 紫罗兰色
@@ -87,23 +88,23 @@ class ParkingUI:
         """处理车辆进入"""
         car_id = self.car_id_entry.get().strip()
         if not car_id:
-            self.log("错误：请输入车牌号", "error")
+            self.log("错误：请输入车牌号\n", "error")
             return
         
         if self.is_car_exists(car_id):
-            self.log(f"错误：车牌号 {car_id} 已存在", "error")
+            self.log(f"错误：车牌号 {car_id} 已存在\n", "error")
             self.car_id_entry.delete(0, tk.END)
             return
         
         car = Car(car_id)
         if self.parking_lot.arrive(car):
             position = len(self.parking_lot.stack)
-            self.log(f"成功：车辆 {car_id} 停入停车场（车位 {position}）", "success")
+            self.log(f"成功：车辆 {car_id} 停入停车场（车位 {position}）\n", "success")
         elif self.waiting_lane.enqueue(car):
             position = len(self.waiting_lane.queue)
-            self.log(f"提示：停车场已满，车辆 {car_id} 在便道等待（位置 {position}）", "info")
+            self.log(f"提示：停车场已满，车辆 {car_id} 在便道等待（位置 {position}）\n", "info")
         else:
-            self.log(f"失败：停车场和便道均满，车辆 {car_id} 无法进入", "warning")
+            self.log(f"失败：停车场和便道均满，车辆 {car_id} 无法进入\n", "warning")
         
         self.car_id_entry.delete(0, tk.END)
         self.refresh_status()
@@ -112,26 +113,26 @@ class ParkingUI:
         """处理车辆离开"""
         car_id = self.car_id_entry.get().strip()
         if not car_id:
-            self.log("错误：请输入车牌号", "error")
+            self.log("错误：请输入车牌号\n", "error")
             return
         
         self.car_id_entry.delete(0, tk.END)
         
         # 检查车辆是否在便道中
         if self.is_car_in_waiting_lane(car_id):
-            self.log(f"错误：车辆 {car_id} 在便道中，无法从停车场离开", "error")
+            self.log(f"错误：车辆 {car_id} 在便道中，无法从停车场离开\n", "error")
             return
         
         # 从停车场离开（实现让路机制）
         car, moved_cars = self.parking_lot.depart(car_id)
         if not car:
-            self.log(f"失败：未找到车牌号为 {car_id} 的车辆", "error")
+            self.log(f"失败：未找到车牌号为 {car_id} 的车辆\n", "error")
             return
         
         # 记录让路车辆信息
         if moved_cars:
             moved_ids = [car.car_id for car in moved_cars]
-            self.log(f"提示：车辆 {car_id} 离开，让路车辆: {', '.join(moved_ids)}（共 {len(moved_cars)} 辆）", "movement-bold")
+            self.log(f"提示：车辆 {car_id} 离开，\n让路车辆: {', '.join(moved_ids)}（共 {len(moved_cars)} 辆）", "movement-bold")
         else:
             self.log(f"提示：车辆 {car_id} 离开，无让路车辆", "info")
         
@@ -140,8 +141,8 @@ class ParkingUI:
         duration = current_time - car.enter_time  # 直接计算时长
         fee = self.billing.calculate_fee(duration)
         formatted = self.billing.format_duration(duration)
-        self.log(f"成功：车辆 {car_id} 停留 {formatted}，应缴费用: ¥{fee:.2f}", "success")
-        
+        self.log(f"成功：车辆 {car_id} 停留 {formatted}", "success")
+        self.log(f"车辆:{car_id}应缴费用: ¥{fee:.2f}\n", "fee")
         # 关键修复：从便道移入一辆车到停车场
         next_car = self.waiting_lane.dequeue()
         if next_car:
@@ -151,13 +152,13 @@ class ParkingUI:
             # 关键修复：使用正确的停车场对象
             if self.parking_lot.arrive(next_car):  # 确保这里是self.parking_lot
                 position = len(self.parking_lot.stack)
-                self.log(f"成功：车辆 {next_car.car_id} 已从便道移入停车场（车位 {position}）", "success")
+                self.log(f"成功：车辆 {next_car.car_id} 已从便道移入停车场（车位 {position}）\n", "success")
             else:
                 # 如果停车场已满（理论上不应该发生），将车放回便道
                 self.waiting_lane.enqueue(next_car)
-                self.log(f"错误：无法将车辆 {next_car.car_id} 移入停车场（已满），已放回便道", "error")
+                self.log(f"错误：无法将车辆 {next_car.car_id} 移入停车场（已满），已放回便道\n", "error")
         else:
-            self.log("提示：便道中无等待车辆", "info")
+            self.log("提示：便道中无等待车辆\n", "info")
         
         self.refresh_status()
 
