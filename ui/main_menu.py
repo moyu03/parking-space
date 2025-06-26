@@ -66,7 +66,6 @@ class MainMenu:
         
         # 分隔线
         ttk.Separator(main_frame, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=10)
-        
         # 其他功能按钮
         other_frame = tk.Frame(main_frame)
         other_frame.pack(fill=tk.X, pady=10)
@@ -133,9 +132,24 @@ class MainMenu:
         self.master.deiconify()  # 重新显示主菜单
     
     def open_settings(self):
-        """打开系统设置"""
-        # 这里实现系统设置界面
-        messagebox.showinfo("系统设置", "系统设置功能开发中")
+            """打开系统设置"""
+            # 隐藏主窗口
+            self.master.withdraw()
+            
+            # 创建设置窗口
+            settings_window = tk.Toplevel(self.master)
+            settings_window.title("系统设置")
+            settings_window.protocol("WM_DELETE_WINDOW", 
+                                    lambda: self.on_settings_close(settings_window))
+            
+            # 加载设置界面
+            from .setting import SettingsUI
+            SettingsUI(settings_window, self.config, self.user)
+    
+    def on_settings_close(self, window):
+        """设置窗口关闭时的回调"""
+        window.destroy()
+        self.master.deiconify()  # 重新显示主菜单
     
     def user_management(self):
         """用户管理"""

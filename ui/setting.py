@@ -1,74 +1,124 @@
-# ui/settings.py
-
 import tkinter as tk
 from tkinter import messagebox
+from .main_menu import MainMenu
 
 class SettingsUI:
     def __init__(self, master, config, user):
         self.master = master
         self.config = config
         self.user = user
-        self.master.title("设置")
-        self.master.geometry("400x300")
-
-        tk.Label(master, text="停车场容量:").pack()
-        self.parking_entry = tk.Entry(master)
+        self.master.title("系统设置")
+        self.master.geometry("500x500")
+        
+        # 主框架
+        main_frame = tk.Frame(master, padx=20, pady=20)
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # 容量设置
+        capacity_frame = tk.LabelFrame(main_frame, text="容量设置")
+        capacity_frame.pack(fill=tk.X, pady=10)
+        
+        tk.Label(capacity_frame, text="停车场容量:").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        self.parking_entry = tk.Entry(capacity_frame)
+        self.parking_entry.grid(row=0, column=1, padx=5, pady=5)
         self.parking_entry.insert(0, str(config.parking_capacity))
-        self.parking_entry.pack()
-
-        tk.Label(master, text="便道容量:").pack()
-        self.waiting_entry = tk.Entry(master)
+        
+        tk.Label(capacity_frame, text="便道容量:").grid(row=1, column=0, padx=5, pady=5, sticky="w")
+        self.waiting_entry = tk.Entry(capacity_frame)
+        self.waiting_entry.grid(row=1, column=1, padx=5, pady=5)
         self.waiting_entry.insert(0, str(config.waiting_capacity))
-        self.waiting_entry.pack()
-
-        tk.Label(master, text="计费模式:").pack()
+        
+        # 计费设置
+        billing_frame = tk.LabelFrame(main_frame, text="计费设置")
+        billing_frame.pack(fill=tk.X, pady=10)
+        
+        tk.Label(billing_frame, text="计费模式:").grid(row=0, column=0, padx=5, pady=5, sticky="w")
         self.billing_var = tk.StringVar(value=config.billing_mode)
-        tk.OptionMenu(master, self.billing_var, "per_minute", "per_hour", "fixed").pack()
-
-        tk.Label(master, text="计费金额:").pack()
-        self.rate_entry = tk.Entry(master)
-        default_rate = config.fee_per_minute if config.billing_mode == "per_minute" \
-            else config.fee_per_hour if config.billing_mode == "per_hour" \
-            else config.fixed_fee
-        self.rate_entry.insert(0, str(default_rate))
-        self.rate_entry.pack()
-
-        tk.Button(master, text="保存设置", command=self.save).pack(pady=10)
-        tk.Button(master, text="返回主菜单", command=self.return_main).pack()
-
+        billing_options = ["per_minute", "per_hour", "fixed"]
+        billing_menu = tk.OptionMenu(billing_frame, self.billing_var, *billing_options)
+        billing_menu.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
         
-        # 添加计费模式说明
-        billing_frame = tk.LabelFrame(master, text="当前计费模式说明")
-        billing_frame.pack(fill="x", padx=10, pady=5)
+        tk.Label(billing_frame, text="费率/固定费用:").grid(row=1, column=0, padx=5, pady=5, sticky="w")
+        self.rate_entry = tk.Entry(billing_frame)
+        self.rate_entry.grid(row=1, column=1, padx=5, pady=5)
         
-        billing_text = tk.Text(billing_frame, height=4, wrap="word")
-        billing_text.pack(fill="x", padx=5, pady=5)
-        
-        # 根据配置显示计费模式说明
+        # 根据当前计费模式设置默认值
         if config.billing_mode == "per_minute":
-            msg = f"当前计费模式: 按分钟计费\n费率: ¥{config.fee_per_minute}/分钟\n示例: 停车30分钟费用 = 30 × {config.fee_per_minute} = ¥{30 * config.fee_per_minute:.2f}"
+            self.rate_entry.insert(0, str(config.fee_per_minute))
         elif config.billing_mode == "per_hour":
-            msg = f"当前计费模式: 按小时计费\n费率: ¥{config.fee_per_hour}/小时\n示例: 停车1.5小时费用 = 1.5 × {config.fee_per_hour} = ¥{1.5 * config.fee_per_hour:.2f}"
+            self.rate_entry.insert(0, str(config.fee_per_hour))
         else:
-            msg = f"当前计费模式: 固定费率\n费用: ¥{config.fixed_fee}\n无论停车时长多久，费用固定"
+            self.rate_entry.insert(0, str(config.fixed_fee))
         
-        billing_text.insert("1.0", msg)
-        billing_text.config(state="disabled")  # 设置为只读
-
-    def save(self):
+        # 双门系统设置（仅管理员可见）
+        if user.role == "admin":
+            dual_frame = tk.LabelFrame(main_frame, text="双门系统设置")
+            dual_frame.pack(fill=tk.X, pady=10)
+            
+            self.dual_var = tk.BooleanVar(value=config.enable_dual_exit)
+            tk.Checkbutton(dual_frame, text="启用双门系统", 
+                          variable=self.dual_var).grid(row=0, column=0, columnspan=2, padx=5, pady=5, sticky="w")
+            
+            tk.Label(dual_frame, text="北出口便道容量:").grid(row=1, column=0, padx=5, pady=5, sticky="w")
+            self.north_entry = tk.Entry(dual_frame)
+            self.north_entry.grid(row=1, column=1, padx=5, pady=5)
+            self.north_entry.insert(0, str(config.dual_exit_settings["north_waiting_capacity"]))
+            
+            tk.Label(dual_frame, text="南出口便道容量:").grid(row=2, column=0, padx=5, pady=5, sticky="w")
+            self.south_entry = tk.Entry(dual_frame)
+            self.south_entry.grid(row=2, column=1, padx=5, pady=5)
+            self.south_entry.insert(0, str(config.dual_exit_settings["south_waiting_capacity"]))
+            
+            tk.Label(dual_frame, text="优化触发阈值:").grid(row=3, column=0, padx=5, pady=5, sticky="w")
+            self.threshold_entry = tk.Entry(dual_frame)
+            self.threshold_entry.grid(row=3, column=1, padx=5, pady=5)
+            self.threshold_entry.insert(0, str(config.dual_exit_settings["optimization_threshold"]))
+        
+        # 按钮区域
+        btn_frame = tk.Frame(main_frame)
+        btn_frame.pack(fill=tk.X, pady=10)
+        
+        tk.Button(btn_frame, text="保存设置", 
+                 command=self.save_settings).pack(side=tk.LEFT, padx=5)
+        
+        tk.Button(btn_frame, text="返回主菜单", 
+                 command=self.return_main).pack(side=tk.RIGHT, padx=5)
+    
+    def save_settings(self):
+        """保存系统设置"""
         try:
-            pc = int(self.parking_entry.get())
-            wc = int(self.waiting_entry.get())
-            rate = int(self.rate_entry.get())
-            self.config.set_capacity(pc, wc)
-            self.config.set_billing(self.billing_var.get(), rate)
-            messagebox.showinfo("成功", "设置已保存")
+            # 保存容量设置
+            self.config.parking_capacity = int(self.parking_entry.get())
+            self.config.waiting_capacity = int(self.waiting_entry.get())
+            
+            # 保存计费设置
+            billing_mode = self.billing_var.get()
+            self.config.billing_mode = billing_mode
+            
+            rate = float(self.rate_entry.get())
+            if billing_mode == "per_minute":
+                self.config.fee_per_minute = rate
+            elif billing_mode == "per_hour":
+                self.config.fee_per_hour = rate
+            else:
+                self.config.fixed_fee = rate
+            
+            # 保存双门系统设置（如果可见）
+            if hasattr(self, 'dual_var'):
+                self.config.enable_dual_exit = self.dual_var.get()
+                
+                # 更新双门系统设置
+                self.config.dual_exit_settings = {
+                    "north_waiting_capacity": int(self.north_entry.get()),
+                    "south_waiting_capacity": int(self.south_entry.get()),
+                    "optimization_threshold": float(self.threshold_entry.get())
+                }
+            
+            messagebox.showinfo("成功", "系统设置已保存")
+            
         except ValueError:
             messagebox.showerror("错误", "请输入有效的数字")
-
+    
     def return_main(self):
+        """返回主菜单"""
         self.master.destroy()
-        from .main_menu import MainMenu
-        root = tk.Tk()
-        MainMenu(root, self.user, self.config)
-        root.mainloop()
