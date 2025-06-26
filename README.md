@@ -30,32 +30,23 @@ pip config get global.index-url
 ```
 项目文档结构
 ```
-parking-space/
-├── src/                    # 源代码
-│   ├── core/               # 核心算法
-│   │   ├── parking_lot.py      # 停车场类（栈实现）
-│   │   ├── side_road.py        # 便道类（队列实现）
-│   │   ├── calculator.py       # 计费模块
-│   │   └── constants.py        # 常量配置
-│   │
-│   ├── ui/                 # 界面系统
-│   │   ├── main_window.py      # 主窗口
-│   │   ├── status_panel.py     # 状态显示区
-│   │   └── control_panel.py    # 操作控制区
-│   │
-│   └── extension/          # 扩展功能
-│       ├── logger.py           # 操作日志
-│       ├── persistence.py      # 数据存储
-│       └── report_generator.py # 统计报表
+parking_space/
 │
-├── tests/                  # 测试套件
-│   ├── test_core/          # 核心算法测试
-│   └── test_extension/     # 扩展功能测试
+├── main.py                  # 程序主入口
+├── core/
+│   ├── parking.py           # 核心类：ParkingLot, Car, WaitingLane
+│   ├── billing.py           # 计费逻辑封装
+│   └── config.py            # 全局配置（默认容量、费率等）
 │
-├── docs/                   # 项目文档
-│   ├── API.md              # 接口文档
-│   └── DESIGN.md           # 设计思路
+├── ui/
+│   ├── login.py             # 登录界面
+│   ├── main_menu.py         # 主菜单界面
+│   ├── parking_ui.py        # 停车管理界面（车辆进出、查看状态）
+│   └── settings.py          # 设置界面（可配置费率、容量）
 │
-├── requirements.txt        # Python依赖
-└── main.py                 # 程序入口
+├── models/
+│   └── user.py              # 用户模型（简单权限）
+│
+└── utils/
+    └── time_utils.py        # 时间/日期相关工具函数
 ```
